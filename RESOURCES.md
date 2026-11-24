@@ -6,7 +6,7 @@
   Documentação oficial Python em PT-BR. Explica como usar listas como pilhas e filas. Use para: entender append/pop e a recomendação de usar deque.
 
 - [Docs Python: collections.deque](https://docs.python.org/3/library/collections.html#collections.deque)
-  Referência oficial do deque. Use para: entender todos os métodos disponíveis e por que é O(1) nas duas pontas.
+  Referência oficial do deque. Use para: entender todos os métodos disponíveis e por que é O(1) nas duas pontas (usado em BFS / percurso por nível).
 
 - [Docs Python: heapq](https://docs.python.org/3/library/heapq.html)
   Referência oficial da heap. Use para: entender min-heap, heappush, heappop e o truque de negar valores para max-heap.
@@ -14,14 +14,14 @@
 - [Docs Python: bisect](https://docs.python.org/3/library/bisect.html)
   Referência oficial do bisect. Use para: entender bisect_left vs bisect_right e inserção em lista ordenada.
 
-- [Real Python: Stacks in Python](https://realpython.com/how-to-implement-python-stack/)
-  Tutorial prático e confiável sobre pilhas. Use para: exemplos claros e comparação de implementações.
+- [IME-USP: Árvores Binárias de Busca](https://www.ime.usp.br/~pf/algoritmos/aulas/binst.html)
+  Material clássico do Prof. Paulo Feofiloff (USP) em português. Use para: definições formais de ABB, busca, inserção e percursos.
 
-- [Real Python: Queues in Python](https://realpython.com/queue-in-python/)
-  Tutorial prático sobre filas. Use para: entender FIFO, deque e filas de prioridade.
+- [IME-USP: Grafos e Buscas (BFS / DFS)](https://www.ime.usp.br/~pf/algoritmos_para_grafos/)
+  Referência acadêmica em PT-BR sobre grafos, árvores como grafos acíclicos conexos, BFS, DFS e ordenação topológica.
 
-- [Treinaweb: Estruturas de Dados em Python](https://www.treinaweb.com.br/blog/estrutura-de-dados-em-python)
-  Artigo em PT-BR com boa cobertura de pilhas, filas e listas. Use para: revisão rápida em português.
+- [VisuAlgo: Binary Search Tree & Graph Traversal](https://visualgo.net/en/bst)
+  Visualizador interativo de ABB e grafos. Use para: ver inserções, percursos e degeneração acontecendo passo a passo.
 
 ## Wisdom (Communities)
 
@@ -30,4 +30,4 @@
 
 ## Gaps
 
-- Não encontrei recurso de alta qualidade em PT-BR específico sobre Insertion Sort com Python. A lição cobre o tópico diretamente.
+- Não encontrei recurso de alta qualidade em PT-BR específico sobre Insertion Sort com Python. A lição 04 cobre o tópico diretamente.

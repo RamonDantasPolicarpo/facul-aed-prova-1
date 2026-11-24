@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folha de Cola — Prova 2: Árvores e Grafos</title>
+  <link rel="stylesheet" href="../assets/course.css">
+  <style>
+    body { max-width: 920px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+    .card { border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; background: var(--surface); }
+    .card h2 { margin-top: 0; font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    @media print { body { padding: 12px; font-size: 13px; } .grid { gap: 10px; } }
+  </style>
+</head>
+<body>
+
+<span class="lesson-number">Referência Rápida</span>
+<h1>Cola da Prova 2 — Árvores e Grafos</h1>
+<p class="subtitle">Resumo direto dos Kahoots 5, 6 e 7 para bater o olho antes da prova das 19h.</p>
+
+<div class="grid">
+  <div class="card">
+    <h2>🌳 Kahoot 5 — Árvores e ABB</h2>
+    <ul>
+      <li><strong>Lista vs Árvore:</strong> lista é linear; árvore é <strong>hierárquica</strong>.</li>
+      <li><strong>Aresta:</strong> ligação direta entre dois nós consecutivos.</li>
+      <li><strong>Folha:</strong> nó <strong>sem filhos</strong>.</li>
+      <li><strong>Profundidade:</strong> nº de arestas entre a <strong>raiz e o nó</strong>.</li>
+      <li><strong>ABB:</strong> esquerda &lt; raiz &lt; direita; 1º inserido = raiz; duplicados ignorados.</li>
+      <li><strong>Buscar:</strong> retorna <code>False</code> em <code>None</code> = <strong>valor não encontrado</strong>.</li>
+      <li><strong>Contar nós (recursivo):</strong> <code>1 + esq + dir</code> (soma subárvores).</li>
+      <li><strong>Entrada ordenada:</strong> altura sobe muito (≈ N) → <strong>ABB degenerada</strong> (igual lista encadeada, <code>O(N)</code>).</li>
+      <li><strong>Entrada variada:</strong> mantém ABB equilibrada e rápida.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🧭 Kahoot 6 — Percursos e Reconstrução</h2>
+    <ul>
+      <li><strong>Pré-ordem (Raiz, Esq, Dir):</strong> raiz entra <strong>logo ao entrar</strong>.</li>
+      <li><strong>Em-ordem (Esq, Raiz, Dir):</strong> na ABB sai em <strong>ordem crescente</strong>.</li>
+      <li><strong>Pós-ordem (Esq, Dir, Raiz):</strong> raiz entra <strong>depois dos filhos</strong>.</li>
+      <li><strong>Por nível (BFS):</strong> usa <strong>Fila (<code>deque</code>)</strong>; custa <strong>O(N)</strong> (cada nó 1x). Se filho direito entrar antes na fila, visita direita antes da esquerda no nível.</li>
+      <li><strong>Reconstrução:</strong> <strong>Pré-ordem</strong> revela a <strong>raiz</strong>; <strong>Em-ordem</strong> separa subárvore esquerda e direita; <strong>dicionário</strong> (<code>val → idx</code>) acha a raiz rápido.</li>
+      <li><strong>Grafo simples:</strong> vértices + arestas; <strong>sem laços</strong> (Falso que aresta começa e termina no mesmo vértice).</li>
+      <li><strong>Grafo completo:</strong> <code>V × (V - 1) / 2</code> (5 vértices → <strong>10</strong> arestas).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🕸️ Kahoot 7 — Grafos na Prática</h2>
+    <ul>
+      <li><strong>Grafo simples:</strong> definido por <strong>vértices e arestas</strong>.</li>
+      <li><strong>Amizade mútua (rede social):</strong> grafo <strong>não direcionado</strong>.</li>
+      <li><strong>Usuário isolado:</strong> <strong>grau igual a zero</strong>.</li>
+      <li><strong>Pedágios / custos:</strong> pesos ficam nas <strong>arestas</strong>.</li>
+      <li><strong>Árvore como grafo:</strong> grafo <strong>conexo e sem ciclos</strong> (Verdadeiro).</li>
+      <li><strong>Arestas em árvore:</strong> sempre <code>V - 1</code> (5 vértices → <strong>4</strong>; 15 vértices → <strong>14</strong>).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>⚡ Algoritmos de Grafos</h2>
+    <ul>
+      <li><strong>BFS (Busca em Largura):</strong> usa <strong>Fila</strong>, explora <strong>por níveis</strong> (vizinhos primeiro) → ideal para <strong>menor rota</strong>.</li>
+      <li><strong>DFS (Busca em Profundidade):</strong> ideal para <strong>detectar ciclos</strong> (ex: dependências).</li>
+      <li><strong>Ordenação Topológica:</strong> ordem válida para instalar pacotes/tarefas com <strong>dependências prévias</strong>.</li>
+      <li><strong>Ciclo na Topológica:</strong> cria <strong>dependência circular</strong> e <strong>impede</strong> a ordenação topológica.</li>
+      <li><strong>Grafo Bipartido:</strong> vértices divididos em <strong>dois grupos disjuntos</strong> (arestas só entre grupos diferentes).</li>
+    </ul>
+  </div>
+</div>
+
+<div class="lesson-footer">
+  <p><strong>Lições:</strong> <a href="../lessons/0006-arvores-e-abb.html">Lição 06 (ABB)</a> | <a href="../lessons/0007-percursos-reconstrucao-grafos-intro.html">Lição 07 (Percursos)</a> | <a href="../lessons/0008-grafos-bfs-dfs-topologica.html">Lição 08 (Grafos)</a></p>
+</div>
+
+</body>
+</html>

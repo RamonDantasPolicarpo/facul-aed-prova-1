@@ -11,3 +11,4 @@
 - Professor não explica conceitos, só mostra código
 - Material de estudo são 4 Kahoots com perguntas de múltipla escolha
 - Aluno demonstra autoconhecimento sobre suas lacunas — bom sinal para aprendizado direcionado
+- Prova prática: professor proibiu bibliotecas prontas (`deque`, `bisect`, etc.) e exigiu implementação manual raiz (ex.: remoção por deslocamento em vetor), contradizendo o foco das aulas. AI foi permitida.

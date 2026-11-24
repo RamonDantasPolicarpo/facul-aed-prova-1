@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 08 — Grafos: Tipos, BFS, DFS, Topológica e Bipartido</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<span class="lesson-number">Lição 08</span>
+<h1>Grafos: Tipos, BFS, DFS, Topológica e Bipartido</h1>
+<p class="subtitle">Tudo o que cai no Kahoot 7: como modelar redes, escolher entre BFS e DFS e detectar dependências circulares.</p>
+
+<!-- ===== MODELAGEM ===== -->
+<h2>🗺️ Modelagem de Grafos</h2>
+
+<p>Um <strong>grafo simples</strong> é definido formalmente por dois conjuntos: <strong>vértices (V)</strong> e <strong>arestas (E)</strong>.</p>
+
+<table>
+  <tr><th>Conceito</th><th>Quando aparece</th><th>Exemplo</th></tr>
+  <tr><td><strong>Não direcionado</strong></td><td>Ligação vale nos dois sentidos (mútua)</td><td>Amizade recíproca em rede social</td></tr>
+  <tr><td><strong>Direcionado (Dígrafo)</strong></td><td>Ligação tem sentido único (seta)</td><td>Seguidores no Instagram / dependências</td></tr>
+  <tr><td><strong>Ponderado</strong></td><td>As <strong>arestas</strong> têm pesos (custos)</td><td>Rotas de viagem com pedágios variáveis</td></tr>
+  <tr><td><strong>Grau = 0</strong></td><td>Vértice sem nenhuma aresta conectada</td><td>Usuário isolado sem conexões na rede</td></tr>
+  <tr><td><strong>Árvore (como grafo)</strong></td><td>Grafo <strong>conexo</strong> e <strong>sem ciclos</strong></td><td><code>V</code> vértices → exatamente <code>V - 1</code> arestas</td></tr>
+</table>
+
+<div class="callout tip">
+  <strong>📐 Atenção na diferença de fórmulas!</strong>
+  <ul>
+    <li><strong>Árvore</strong> com <code>V</code> vértices: <code>V - 1</code> arestas (ex: 5 vértices → 4; 15 vértices → 14).</li>
+    <li><strong>Grafo completo</strong> com <code>V</code> vértices: <code>V × (V - 1) / 2</code> arestas (ex: 5 vértices → 10).</li>
+  </ul>
+</div>
+
+<!-- ===== BFS vs DFS ===== -->
+<h2>🔎 BFS (Largura) vs DFS (Profundidade)</h2>
+
+<table>
+  <tr><th>Algoritmo</th><th>Estrutura</th><th>Como anda</th><th>Melhor uso na prova</th></tr>
+  <tr><td><strong>BFS</strong> (Largura)</td><td><strong>Fila</strong> (<code>deque</code>)</td><td>Explora <strong>por níveis</strong> (vizinhos próximos primeiro)</td><td>Achar a <strong>menor rota</strong> (menor nº de passos)</td></tr>
+  <tr><td><strong>DFS</strong> (Profundidade)</td><td><strong>Pilha / Recursão</strong></td><td>Vai o mais fundo possível antes de voltar</td><td><strong>Detectar ciclos</strong> (ex: em dependências)</td></tr>
+</table>
+
+<p><strong>Por que BFS usa Fila?</strong> Porque a fila (FIFO) garante visitar todos os vizinhos diretos (distância 1) antes de ir para distância 2, garantindo o menor caminho em grafos sem peso.</p>
+
+<!-- ===== TOPOLOGICA ===== -->
+<h2>📦 Ordenação Topológica</h2>
+
+<p>Serve para ordenar tarefas ou <strong>instalação de pacotes com dependências prévias</strong> (ex: instalar B antes de A). Só funciona em grafos direcionados <strong>sem ciclos (DAG)</strong>.</p>
+
+<div class="callout">
+  <strong>Por que um ciclo impede a ordenação topológica?</strong>
+  Porque um ciclo cria uma <strong>dependência circular</strong> (A depende de B, e B depende de A) — não existe ponto de partida válido!
+</div>
+
+<!-- ===== BIPARTIDO ===== -->
+<h2>⚖️ Grafo Bipartido</h2>
+
+<p>Um grafo é <strong>bipartido</strong> quando seus vértices podem ser divididos em <strong>dois grupos disjuntos</strong> (sem vértice em comum), de forma que toda aresta liga um vértice de um grupo a um vértice do outro grupo (nunca dentro do mesmo grupo).</p>
+
+<div class="diagram">
+  Grupo A (Pessoas)          Grupo B (Matérias)
+      [Ana]  ───────────────▶ [AED]
+             ╲
+      [Ramon] ──────────────▶ [Banco de Dados]
+
+  Nenhuma aresta liga Pessoa–Pessoa ou Matéria–Matéria!
+</div>
+
+<!-- ===== QUIZ ===== -->
+<h2>🎯 Prática Rápida (Estilo Kahoot 7)</h2>
+
+<div class="quiz" data-quiz="q1">
+  <h3>1. Por que a busca em largura (BFS) usa uma fila em vez de pilha?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Para explorar todos os vizinhos primeiro</li>
+    <li>Para detectar ciclos em grafos completos</li>
+    <li>Para ordenar vértices em ordem crescente</li>
+    <li>Para dividir vértices em dois grupos</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Exato! A fila explora os vizinhos por nível primeiro, achando a menor rota.</div>
+  <div class="quiz-feedback wrong">❌ A fila garante que os vizinhos mais próximos sejam explorados antes dos mais distantes.</div>
+</div>
+
+<div class="quiz" data-quiz="q2">
+  <h3>2. Para detectar ciclos em dependências de pacotes, qual algoritmo você deve utilizar?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Busca em profundidade nos vértices</li>
+    <li>Busca em largura por níveis</li>
+    <li>Busca binária em lista ordenada</li>
+    <li>Percurso em ordem numa árvore</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Isso! A DFS segue cada caminho fundo e detecta quando volta a um nó em visitação (ciclo).</div>
+  <div class="quiz-feedback wrong">❌ Para detectar ciclos, usamos Busca em Profundidade (DFS).</div>
+</div>
+
+<div class="quiz" data-quiz="q3">
+  <h3>3. Por que não é possível fazer ordenação topológica em um grafo com ciclo?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Porque o ciclo cria dependência circular</li>
+    <li>Porque o grafo se torna não direcionado</li>
+    <li>Porque os pesos viram números negativos</li>
+    <li>Porque todo vértice fica com grau zero</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Perfeito! Dependência circular trava a ordem: ninguém pode vir antes de si mesmo.</div>
+  <div class="quiz-feedback wrong">❌ Um ciclo gera dependência circular, impedindo qualquer ordem topológica válida.</div>
+</div>
+
+<div class="quiz" data-quiz="q4">
+  <h3>4. Quantas arestas existem em uma árvore simples contendo exatamente 15 vértices?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Quatorze arestas conectando os vértices</li>
+    <li>Quinze arestas fechando um ciclo</li>
+    <li>Cento e cinco arestas completas</li>
+    <li>Trinta arestas com pesos iguais</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Certo! Árvore com V vértices tem sempre V - 1 = 14 arestas.</div>
+  <div class="quiz-feedback wrong">❌ Lembre: árvore conexa com V vértices tem exatamente V - 1 arestas (15 - 1 = 14).</div>
+</div>
+
+<!-- ===== RODAPÉ ===== -->
+<div class="lesson-footer">
+  <p><strong>Recurso recomendado:</strong> <a href="https://www.ime.usp.br/~pf/algoritmos_para_grafos/" target="_blank">IME-USP — Algoritmos para Grafos</a></p>
+  <p><strong>Navegação:</strong> <a href="0007-percursos-reconstrucao-grafos-intro.html">← Lição 07</a> | <a href="../reference/consulta-prova-2-arvores-grafos.html">📄 Folha de Cola da Prova 2</a></p>
+  <p><em>Bora revisar a Folha de Cola antes das 19h! Qualquer dúvida, manda aqui.</em></p>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

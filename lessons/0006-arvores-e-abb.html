@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 06 — Árvores e Árvore Binária de Busca (ABB)</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<span class="lesson-number">Lição 06</span>
+<h1>Árvores e Árvore Binária de Busca (ABB)</h1>
+<p class="subtitle">Da lista linear à hierarquia — como a ABB organiza dados e por que a ordem de chegada muda tudo.</p>
+
+<!-- ===== CONCEITO ===== -->
+<h2>🌳 Lista vs Árvore</h2>
+
+<p>A principal diferença entre uma <strong>lista</strong> e uma <strong>árvore</strong> é a organização:</p>
+<ul>
+  <li><strong>Lista:</strong> estrutura <strong>linear</strong> (um elemento atrás do outro, em fila única).</li>
+  <li><strong>Árvore:</strong> estrutura <strong>hierárquica</strong> (um nó pai se ramifica em nós filhos, como pastas no sistema ou organograma).</li>
+</ul>
+
+<h2>🦴 Anatomia de uma Árvore</h2>
+
+<table>
+  <tr><th>Termo</th><th>Significado</th></tr>
+  <tr><td><strong>Raiz</strong></td><td>O primeiro nó no topo da árvore (não tem pai).</td></tr>
+  <tr><td><strong>Aresta</strong></td><td>A ligação direta (linha/ponteiro) entre dois nós consecutivos (pai ↔ filho).</td></tr>
+  <tr><td><strong>Folha</strong></td><td>Um nó na ponta que <strong>não tem filhos</strong> (<code>esq</code> e <code>dir</code> são <code>None</code>).</td></tr>
+  <tr><td><strong>Profundidade</strong></td><td>Número de <strong>arestas</strong> no caminho entre a <strong>raiz e o nó</strong> (raiz tem profundidade 0).</td></tr>
+  <tr><td><strong>Altura</strong></td><td>Maior profundidade da árvore (distância da raiz até a folha mais baixa).</td></tr>
+</table>
+
+<!-- ===== ABB ===== -->
+<h2>🔍 Árvore Binária de Busca (ABB)</h2>
+
+<p>Uma <strong>ABB</strong> (ou <em>BST — Binary Search Tree</em>) é uma árvore onde cada nó tem no máximo 2 filhos e obedece sempre à mesma regra de ouro:</p>
+
+<div class="callout">
+  <strong>Regra de Ouro da ABB</strong>
+  Tudo na <strong>subárvore esquerda</strong> é <strong>menor</strong> que o nó atual.<br>
+  Tudo na <strong>subárvore direita</strong> é <strong>maior</strong> que o nó atual.
+</div>
+
+<p>Na implementação padrão vista em aula (Python), <strong>valores duplicados são ignorados</strong> na inserção para evitar duplicidade.</p>
+
+<h3>Exemplo passo a passo: inserindo <code>8, 3, 10, 1, 6, 14</code></h3>
+<ol>
+  <li><code>8</code> chega na árvore vazia → vira a <strong>raiz</strong>.</li>
+  <li><code>3</code> &lt; 8 → vai para a <strong>esquerda</strong> do 8.</li>
+  <li><code>10</code> &gt; 8 → vai para a <strong>direita</strong> do 8.</li>
+  <li><code>1</code> &lt; 8 (esq) e <code>1</code> &lt; 3 (esq) → esquerda do 3.</li>
+  <li><code>6</code> &lt; 8 (esq) e <code>6</code> &gt; 3 (dir) → direita do 3.</li>
+  <li><code>14</code> &gt; 8 (dir) e <code>14</code> &gt; 10 (dir) → direita do 10.</li>
+</ol>
+
+<div class="diagram">
+          [8]           ← Raiz (profundidade 0)
+         /   \
+       [3]   [10]       ← Arestas ligam pai e filho (profundidade 1)
+       / \      \
+     [1] [6]   [14]     ← Folhas: 1, 6 e 14 (sem filhos, profundidade 2)
+</div>
+
+<div class="callout java">
+  <strong>🔶 Conexão com Java</strong>
+  Em Java, cada nó seria uma classe <code>Node { int val; Node left, right; }</code> (onde <code>None</code> em Python equivale a <code>null</code> em Java). A coleção <code>TreeSet</code> do Java usa uma árvore de busca balanceada por baixo dos panos!
+</div>
+
+<!-- ===== CÓDIGO ===== -->
+<h2>💻 Código Python Completo (Nó, Inserção, Busca e Contagem)</h2>
+
+<p>Para o código rodar de verdade, primeiro definimos a classe <code>No</code> (igual a um <code>class Node</code> em Java, com ponteiros <code>esq</code> e <code>dir</code>):</p>
+
+<pre><code><span class="kw">class</span> <span class="fn">No</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, val):
+        self.val = val
+        self.esq = <span class="kw">None</span>
+        self.dir = <span class="kw">None</span>
+
+<span class="kw">def</span> <span class="fn">inserir</span>(no, valor):
+    <span class="kw">if</span> no <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="kw">return</span> No(valor)
+    <span class="kw">if</span> valor &lt; no.val:
+        no.esq = inserir(no.esq, valor)
+    <span class="kw">elif</span> valor &gt; no.val:
+        no.dir = inserir(no.dir, valor)
+    <span class="cmt"># se valor == no.val, ignora (evita duplicidade!)</span>
+    <span class="kw">return</span> no
+
+<span class="kw">def</span> <span class="fn">buscar</span>(no, valor):
+    <span class="kw">if</span> no <span class="kw">is</span> <span class="kw">None</span>:          <span class="cmt"># Chegou no vazio → valor NÃO encontrado!</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">if</span> valor == no.val:
+        <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">if</span> valor &lt; no.val:
+        <span class="kw">return</span> buscar(no.esq, valor)
+    <span class="kw">return</span> buscar(no.dir, valor)
+
+<span class="kw">def</span> <span class="fn">contar_nos</span>(no):
+    <span class="kw">if</span> no <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="kw">return</span> <span class="num">0</span>
+    <span class="kw">return</span> <span class="num">1</span> + contar_nos(no.esq) + contar_nos(no.dir)  <span class="cmt"># Soma as subárvores + 1</span>
+
+<span class="cmt"># Testando na prática:</span>
+raiz = <span class="kw">None</span>
+<span class="kw">for</span> x <span class="kw">in</span> [<span class="num">8</span>, <span class="num">3</span>, <span class="num">10</span>, <span class="num">1</span>, <span class="num">6</span>, <span class="num">14</span>]:
+    raiz = inserir(raiz, x)
+
+<span class="fn">print</span>(buscar(raiz, <span class="num">6</span>))     <span class="cmt"># True</span>
+<span class="fn">print</span>(buscar(raiz, <span class="num">99</span>))    <span class="cmt"># False</span>
+<span class="fn">print</span>(contar_nos(raiz))    <span class="cmt"># 6</span></code></pre>
+
+<div class="callout tip">
+  <strong>💡 Atenção para a prova</strong>
+  Se quiser saber se um valor está na ABB, a primeira função a implementar/chamar é <code>buscar</code>. Se ela chega em <code>None</code> e retorna <code>False</code>, significa que o <strong>valor não foi encontrado</strong>.
+</div>
+
+<!-- ===== DEGENERADA ===== -->
+<h2>⚠️ ABB Equilibrada vs ABB Degenerada</h2>
+
+<p>A velocidade da ABB depende da sua <strong>altura</strong>:</p>
+<ul>
+  <li><strong>Inserções variadas (equilibrada):</strong> os dois lados crescem juntos. A altura fica próxima de <code>log₂(N)</code> → busca muito rápida.</li>
+  <li><strong>Valores já ordenados (ex: <code>1, 2, 3, 4, 5</code>):</strong> cada novo valor é maior que o anterior e vai sempre para a direita. A altura aumenta muito (fica próxima de <code>N</code>).</li>
+</ul>
+
+<div class="diagram">
+  ABB Equilibrada (altura ≈ log N)      ABB Degenerada: 1, 2, 3, 4 (altura ≈ N)
+            [3]                              [1]
+           /   \                                \
+         [1]   [4]                              [2]
+           \     \                                \
+           [2]   [5]                              [3]
+                                                    \
+                                                    [4]  ← igual a uma lista encadeada!
+</div>
+
+<p>Quando a ABB fica <strong>degenerada</strong> (inclinada para um lado só), sua altura é próxima de <code>N</code> e ela se comporta como uma <strong>lista encadeada</strong> — busca e inserção caem para <code>O(N)</code>.</p>
+
+<!-- ===== QUIZ ===== -->
+<h2>🎯 Prática Rápida (Estilo Kahoot 5)</h2>
+
+<div class="quiz" data-quiz="q1">
+  <h3>1. Qual afirmação descreve corretamente a principal diferença entre uma lista e uma árvore?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Árvore organiza dados de forma hierárquica</li>
+    <li>Árvore guarda apenas números inteiros positivos</li>
+    <li>Lista não permite inserir novos elementos</li>
+    <li>Lista usa menos memória em qualquer caso</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Exato! Lista é linear (1D); árvore é hierárquica (pai → filhos).</div>
+  <div class="quiz-feedback wrong">❌ Lembre: lista é linear e árvore é hierárquica.</div>
+</div>
+
+<div class="quiz" data-quiz="q2">
+  <h3>2. O que acontece com a altura de uma ABB se os valores chegarem já ordenados crescentemente?</h3>
+  <ul class="quiz-options">
+    <li data-correct>A altura aumenta muito e vira lista</li>
+    <li>A altura diminui pela metade automaticamente</li>
+    <li>Os valores duplicados corrigem o equilíbrio</li>
+    <li>A raiz muda a cada nova inserção</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Isso! Todo nó vai para a direita, a altura fica próxima de N (árvore degenerada).</div>
+  <div class="quiz-feedback wrong">❌ Valores ordenados fazem todos os nós irem para um único lado, aumentando muito a altura.</div>
+</div>
+
+<div class="quiz" data-quiz="q3">
+  <h3>3. Ao inserir 8, 3, 10, 1, 6, 14 em uma ABB vazia, onde fica o valor 6?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Na subárvore esquerda, filho direito de 3</li>
+    <li>Na subárvore direita, filho esquerdo de 10</li>
+    <li>Na subárvore esquerda, filho esquerdo de 3</li>
+    <li>Na subárvore direita, filho direito de 14</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Perfeito! 6 &lt; 8 (vai pra esquerda), depois 6 &gt; 3 (vai pra direita do 3).</div>
+  <div class="quiz-feedback wrong">❌ Rastreie: 6 &lt; 8 (esquerda do 8), depois compara com 3: 6 &gt; 3 (direita do 3).</div>
+</div>
+
+<div class="quiz" data-quiz="q4">
+  <h3>4. Se a função buscar retorna False ao chegar em um nó None, o que isso significa?</h3>
+  <ul class="quiz-options">
+    <li data-correct>O valor procurado não foi encontrado</li>
+    <li>A árvore inteira está vazia agora</li>
+    <li>O nó atual é uma folha</li>
+    <li>O valor existe em duplicidade lá</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Certo! Chegar em None quer dizer que o caminho acabou sem achar o valor.</div>
+  <div class="quiz-feedback wrong">❌ None na busca significa que não há mais para onde descer: valor não encontrado.</div>
+</div>
+
+<!-- ===== RODAPÉ ===== -->
+<div class="lesson-footer">
+  <p><strong>Recurso recomendado:</strong> <a href="https://www.ime.usp.br/~pf/algoritmos/aulas/binst.html" target="_blank">IME-USP — Árvores Binárias de Busca</a></p>
+  <p><strong>Navegação:</strong> <a href="0005-bibliotecas-heapq-bisect-join.html">← Lição 05</a> | Próxima: Lição 07 (Percursos e Reconstrução)</p>
+  <p><em>Ficou alguma dúvida sobre ABB ou quer testar outro exemplo? Pergunte direto no chat!</em></p>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

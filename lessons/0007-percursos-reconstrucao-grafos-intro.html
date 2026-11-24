@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 07 — Percursos, Reconstrução e Intro a Grafos</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<span class="lesson-number">Lição 07</span>
+<h1>Percursos em Árvores, Reconstrução e Intro a Grafos</h1>
+<p class="subtitle">Como visitar todos os nós de uma árvore, reconstruí-la a partir dos percursos e dar os primeiros passos em grafos.</p>
+
+<!-- ===== PERCURSOS ===== -->
+<h2>🧭 Os 3 Percursos em Profundidade</h2>
+
+<p>O nome de cada percurso diz <strong>em que momento a RAIZ é visitada</strong> (adicionada ao resultado):</p>
+
+<table>
+  <tr><th>Percurso</th><th>Ordem de Visita</th><th>Quando a Raiz entra?</th><th>Uso clássico</th></tr>
+  <tr><td><strong>Pré-ordem</strong></td><td><strong>Raiz</strong> → Esq → Dir</td><td>Logo ao entrar (antes dos filhos)</td><td>Revela a raiz na reconstrução</td></tr>
+  <tr><td><strong>Em-ordem</strong></td><td>Esq → <strong>Raiz</strong> → Dir</td><td>No meio (entre esq e dir)</td><td>Na ABB, imprime em <strong>ordem crescente</strong></td></tr>
+  <tr><td><strong>Pós-ordem</strong></td><td>Esq → Dir → <strong>Raiz</strong></td><td>Por último (depois dos filhos)</td><td>Deletar árvore / avaliar expressões</td></tr>
+</table>
+
+<div class="diagram">
+          [8]
+         /   \
+       [3]   [10]
+
+  Pré-ordem (Raiz, Esq, Dir):  8, 3, 10
+  Em-ordem  (Esq, Raiz, Dir):  3, 8, 10   ← crescente na ABB!
+  Pós-ordem (Esq, Dir, Raiz):  3, 10, 8
+</div>
+
+<!-- ===== POR NIVEL ===== -->
+<h2>🌊 Percurso por Nível (BFS com <code>deque</code>)</h2>
+
+<p>O percurso por nível visita primeiro a raiz, depois todos os nós do nível 1, depois nível 2, etc. Para manter essa ordem, usamos uma <strong>Fila (<code>collections.deque</code>)</strong>:</p>
+<ul>
+  <li><strong>Custo:</strong> <code>O(N)</code>, porque cada nó entra na fila e é visitado <strong>uma única vez</strong>.</li>
+  <li><strong>Ordem dos filhos:</strong> normalmente colocamos <code>esq</code> antes de <code>dir</code>. Se o filho direito entrar na fila primeiro, os nós de cada nível serão visitados da <strong>direita para a esquerda</strong>.</li>
+</ul>
+
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="kw">class</span> <span class="fn">No</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, val):
+        self.val = val
+        self.esq = <span class="kw">None</span>
+        self.dir = <span class="kw">None</span>
+
+<span class="kw">def</span> <span class="fn">por_nivel</span>(raiz):
+    <span class="kw">if</span> raiz <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="kw">return</span> []
+    fila = deque([raiz])
+    resultado = []
+    <span class="kw">while</span> fila:
+        atual = fila.popleft()          <span class="cmt"># Sai quem entrou primeiro (FIFO)</span>
+        resultado.append(atual.val)
+        <span class="kw">if</span> atual.esq: fila.append(atual.esq)
+        <span class="kw">if</span> atual.dir: fila.append(atual.dir)
+    <span class="kw">return</span> resultado
+
+<span class="cmt"># Montando a árvore [8, 3, 10]:</span>
+raiz = No(<span class="num">8</span>)
+raiz.esq = No(<span class="num">3</span>)
+raiz.dir = No(<span class="num">10</span>)
+<span class="fn">print</span>(por_nivel(raiz))  <span class="cmt"># Saída: [8, 3, 10]</span></code></pre>
+
+<!-- ===== RECONSTRUCAO ===== -->
+<h2>🧩 Reconstrução de Árvore (Pré-ordem + Em-ordem)</h2>
+
+<p>Como descobrir o formato exato de uma árvore tendo apenas duas listas (Pré-ordem e Em-ordem)?</p>
+<ol>
+  <li>A <strong>Pré-ordem</strong> sempre revela primeiro quem é a <strong>raiz</strong> (é o 1º item).</li>
+  <li>Procuramos essa raiz na lista <strong>Em-ordem</strong>: tudo que está à <strong>esquerda</strong> dela forma a subárvore esquerda; tudo à <strong>direita</strong> forma a subárvore direita.</li>
+  <li>Para achar rapidamente a posição (índice) da raiz na lista Em-ordem sem buscar toda hora, usamos um <strong>dicionário</strong> (<code>{valor: indice}</code>, equivalente a <code>HashMap</code> em Java).</li>
+</ol>
+
+<div class="callout">
+  <strong>Exemplo rápido</strong>
+  Pré-ordem: <code>A B C</code> → 1º elemento é <code>A</code> (raiz!).<br>
+  Em-ordem: <code>B A C</code> → como <code>A</code> está no meio, <code>B</code> fica na <strong>esquerda</strong> e <code>C</code> na <strong>direita</strong>.
+</div>
+
+<!-- ===== INTRO GRAFOS ===== -->
+<h2>🕸️ Introdução a Grafos</h2>
+
+<p>Um grafo é formado por dois conjuntos fundamentais: <strong>vértices (nós)</strong> e <strong>arestas (ligações)</strong>. Por exemplo, em um mapa de voos, as <strong>cidades são os vértices</strong> e os voos são as arestas.</p>
+
+<ul>
+  <li><strong>Grafo simples:</strong> não tem <em>laço</em> (aresta que começa e termina no mesmo vértice) e não tem arestas paralelas repetidas.</li>
+  <li><strong>Grafo completo:</strong> todo vértice está ligado a todos os outros vértices. Com <code>V</code> vértices, o total de arestas é:</li>
+</ul>
+
+<div class="callout tip">
+  <strong>📐 Fórmula do Grafo Completo</strong>
+  <code>Arestas = V × (V - 1) / 2</code><br>
+  Para <code>V = 5</code> vértices: <code>5 × 4 / 2 = <strong>10</strong></code> arestas.
+</div>
+
+<!-- ===== QUIZ ===== -->
+<h2>🎯 Prática Rápida (Estilo Kahoot 6)</h2>
+
+<div class="quiz" data-quiz="q1">
+  <h3>1. Ao reconstruir uma árvore, qual informação a posição da raiz no percurso em-ordem fornece?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Quais nós ficam na esquerda e na direita</li>
+    <li>Qual nó possui a maior profundidade na árvore</li>
+    <li>Quantos vértices existem no grafo completo</li>
+    <li>Se a árvore possui valores duplicados inseridos</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Exato! No em-ordem, tudo antes da raiz é subárvore esquerda e tudo depois é direita.</div>
+  <div class="quiz-feedback wrong">❌ Lembre: a pré-ordem dá a raiz; o em-ordem separa esquerda e direita!</div>
+</div>
+
+<div class="quiz" data-quiz="q2">
+  <h3>2. Qual estrutura auxiliar permite localizar rapidamente a posição de cada raiz durante a reconstrução?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Dicionário mapeando valor para índice</li>
+    <li>Pilha guardando os nós já visitados</li>
+    <li>Lista ordenada por ordem decrescente</li>
+    <li>Fila dupla removendo pelo lado direito</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Isso! Um dicionário (HashMap em Java) encontra o índice da raiz em O(1).</div>
+  <div class="quiz-feedback wrong">❌ Para buscar índice por valor instantaneamente, usamos um dicionário (mapa valor → índice).</div>
+</div>
+
+<div class="quiz" data-quiz="q3">
+  <h3>3. Se um grafo simples completo tem 5 vértices, quantas arestas ele possui no total?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Dez arestas ligando todos entre si</li>
+    <li>Quatro arestas formando apenas um caminho</li>
+    <li>Cinco arestas fechando um único ciclo</li>
+    <li>Vinte arestas contando cada par duplo</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Perfeito! 5 × 4 / 2 = 10 arestas.</div>
+  <div class="quiz-feedback wrong">❌ Use V × (V - 1) / 2: 5 × 4 / 2 = 10.</div>
+</div>
+
+<div class="quiz" data-quiz="q4">
+  <h3>4. Por que o percurso por nível (BFS) custa O(N) para uma árvore com N nós?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Cada nó é visitado uma única vez</li>
+    <li>A fila ordena os elementos antes</li>
+    <li>A altura sempre fica igual a um</li>
+    <li>O dicionário apaga os nós folhas</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Certo! Cada nó entra e sai da fila exatamente 1 vez → O(N).</div>
+  <div class="quiz-feedback wrong">❌ Como não há revisitas, cada um dos N nós é processado uma única vez: O(N).</div>
+</div>
+
+<!-- ===== RODAPÉ ===== -->
+<div class="lesson-footer">
+  <p><strong>Recurso recomendado:</strong> <a href="https://visualgo.net/en/bst" target="_blank">VisuAlgo — Visualizador de Árvores e Percursos</a></p>
+  <p><strong>Navegação:</strong> <a href="0006-arvores-e-abb.html">← Lição 06</a> | Próxima: Lição 08 (Grafos, BFS, DFS e Topológica)</p>
+  <p><em>Qualquer dúvida na reconstrução ou no código, manda aqui no chat!</em></p>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
