@@ -31,3 +31,30 @@
 ## Gaps
 
 - Não encontrei recurso de alta qualidade em PT-BR específico sobre Insertion Sort com Python. A lição 04 cobre o tópico diretamente.
+
+---
+
+# Desenvolvimento Back-End (C# / .NET) — Resources
+
+## Knowledge
+
+- [Microsoft Learn: Visão geral do Entity Framework Core](https://learn.microsoft.com/pt-br/ef/core/)
+  Documentação oficial em PT-BR do EF Core. Use para: entender `DbContext`, `DbSet<T>`, Change Tracker, mapeamento e provedores.
+
+- [Microsoft Learn: Tempo de vida e configuração do DbContext](https://learn.microsoft.com/pt-br/ef/core/dbcontext-configuration/)
+  Referência oficial sobre `Scoped` vs `Singleton`, thread-safety e descarte automático via injeção de dependência.
+
+- [Microsoft Learn: Consultas com e sem rastreamento (AsNoTracking)](https://learn.microsoft.com/pt-br/ef/core/querying/tracking)
+  Explica quando usar `AsNoTracking()` para leitura, como o Change Tracker funciona e impacto em memória/performance.
+
+- [Microsoft Learn: Carregamento de dados relacionados (Eager vs Lazy)](https://learn.microsoft.com/pt-br/ef/core/querying/related-data/)
+  Referência sobre `Include()` / `ThenInclude()`, Lazy Loading e como evitar o problema de consultas N+1.
+
+- [Microsoft Learn: Visão geral das Migrations do EF Core](https://learn.microsoft.com/pt-br/ef/core/managing-schemas/migrations/)
+  Explica `dotnet ef migrations add`, `database update`, snapshot e a tabela `__EFMigrationsHistory`.
+
+- [Microsoft Learn: Criar APIs Web com ASP.NET Core (Controllers e Validação)](https://learn.microsoft.com/pt-br/aspnet/core/web-api/)
+  Documentação oficial sobre `[ApiController]`, validação automática com Data Annotations e retorno padronizado com `ProblemDetails` / `ValidationProblemDetails`.
+
+- [MDN / Conceitos de Hash Criptográfico (MD5 vs SHA-256)](https://learn.microsoft.com/pt-br/dotnet/standard/security/cryptographic-services)
+  Serviços criptográficos no .NET: diferença entre hash (unidirecional, integridade) e criptografia, e por que SHA-256 substituiu MD5.

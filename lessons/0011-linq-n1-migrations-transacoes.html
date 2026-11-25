@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 11 — LINQ, AsNoTracking, N+1, Migrations e Transações</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<span class="lesson-number">Lição 11 — Back-End</span>
+<h1>LINQ, AsNoTracking, N+1, Migrations e Transações</h1>
+<p class="subtitle">Como evitar consultas lentas, versionar o banco com segurança e garantir atomicidade no EF Core.</p>
+
+<!-- ===== IQUERYABLE VS MEMÓRIA ===== -->
+<h2>⚡ IQueryable: filtre no banco, não na memória</h2>
+
+<p>Enquanto a consulta é <code>IQueryable</code>, o EF Core ainda está montando o SQL. Só quando você chama <code>ToListAsync()</code>, <code>FirstAsync()</code> ou <code>SingleOrDefaultAsync()</code> ela é <strong>materializada</strong> (executada no banco):</p>
+
+<pre><code>// ✅ EFICIENTE: Where roda no SQL (SELECT ... WHERE Price &gt;= @minPrice)
+var result = await db.Products
+    .AsNoTracking()
+    .Where(p =&gt; p.Price &gt;= minPrice)
+    .Select(p =&gt; new ProductResponse(p.Id, p.Name, p.Price))
+    .ToListAsync(ct);
+
+// ❌ INEFICIENTE: traz a tabela inteira para a memória e filtra em C#
+var todos = await db.Products.ToListAsync(ct);
+var baratos = todos.Where(p =&gt; p.Price &lt; 10);</code></pre>
+
+<ul>
+  <li><strong><code>AsNoTracking()</code>:</strong> desativa o Change Tracker em consultas <strong>somente leitura</strong> (<code>GET</code>), economizando memória e CPU. Não use em <code>PUT</code> ou <code>DELETE</code>, pois você precisa do rastreamento para o <code>SaveChangesAsync()</code>.</li>
+  <li><strong><code>Select(...)</code> (Projeção):</strong> traz apenas as colunas necessárias para o DTO, evitando <em>overfetching</em>.</li>
+</ul>
+
+<!-- ===== N+1 E LOADING ===== -->
+<h2>🔁 O problema N+1 (Lazy vs Eager vs Projeção)</h2>
+
+<table>
+  <tr><th>Estratégia</th><th>Como funciona</th><th>Consultas SQL (para 50 pedidos)</th></tr>
+  <tr><td><strong>Lazy Loading</strong></td><td>Carrega <code>pedido.Cliente</code> sob demanda dentro do <code>foreach</code></td><td>❌ <strong>1 + 50 = 51 consultas (N+1)</strong></td></tr>
+  <tr><td><strong>Eager Loading</strong></td><td>Usa <code>.Include(p =&gt; p.Cliente)</code> para trazer junto</td><td>✅ <strong>1 consulta (JOIN)</strong></td></tr>
+  <tr><td><strong>Projeção</strong></td><td>Usa <code>.Select(p =&gt; new Dto(...))</code> direto para DTO</td><td>✅ <strong>1 consulta enxuta (preferida em APIs)</strong></td></tr>
+</table>
+
+<!-- ===== MIGRATIONS ===== -->
+<h2>📦 Migrations: versionamento do schema</h2>
+
+<ul>
+  <li><code>dotnet ef migrations add InitialCreate</code> → compara as classes/Fluent API com o snapshot e gera código com <code>Up()</code> (aplicar) e <code>Down()</code> (desfazer).</li>
+  <li><code>dotnet ef database update</code> → executa as migrations pendentes no banco.</li>
+  <li><strong><code>__EFMigrationsHistory</code>:</strong> tabela automática no banco que registra quais migrations já foram aplicadas.</li>
+</ul>
+
+<!-- ===== TRANSAÇÕES ===== -->
+<h2>🔒 Transações: Implícita vs Explícita</h2>
+
+<ul>
+  <li><strong>Implícita (<code>SaveChangesAsync()</code> único):</strong> o EF Core já executa todos os comandos daquele único <code>SaveChangesAsync</code> dentro de uma transação automática.</li>
+  <li><strong>Explícita (<code>BeginTransactionAsync()</code>):</strong> necessária quando você tem <strong>múltiplos <code>SaveChangesAsync()</code></strong> que precisam de <strong>atomicidade</strong> (ou tudo dá <code>CommitAsync()</code>, ou tudo sofre <code>RollbackAsync()</code> em caso de erro — ex.: atualizar estoque + registrar <code>StockMovement</code>).</li>
+</ul>
+
+<!-- ===== QUIZ ===== -->
+<h2>🧪 Teste rápido</h2>
+
+<div class="quiz" data-quiz="q1">
+  <h3>1. Ao buscar 50 pedidos e acessar pedido.Cliente.Nome no foreach com Lazy Loading, quantas queries rodam?</h3>
+  <ul class="quiz-options">
+    <li data-correct>51 consultas (1 inicial mais 50)</li>
+    <li>50 consultas (uma para cada cliente)</li>
+    <li>2 consultas (pedidos e depois clientes)</li>
+    <li>1 consulta (com JOIN automático)</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Isso! 1 consulta para os 50 pedidos + 50 consultas dentro do loop = 51 (problema N+1).</div>
+  <div class="quiz-feedback wrong">❌ Atenção: além das 50 consultas do loop, houve a 1ª consulta para buscar os pedidos (1 + N = 51).</div>
+</div>
+
+<div class="quiz" data-quiz="q2">
+  <h3>2. Quando o uso de AsNoTracking() traz ganho real sem quebrar a operação?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Em consultas GET somente para leitura</li>
+    <li>Em endpoints PUT para alterar preços</li>
+    <li>Em endpoints DELETE para remover linhas</li>
+    <li>Em transações explícitas com dois saves</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Exato! Leituras não precisam de Change Tracker; PUT e DELETE precisam do rastreamento para SaveChangesAsync.</div>
+  <div class="quiz-feedback wrong">❌ Lembre-se: PUT e DELETE precisam que o Change Tracker rastreie a entidade. Use AsNoTracking apenas em leituras.</div>
+</div>
+
+<div class="quiz" data-quiz="q3">
+  <h3>3. O que a tabela __EFMigrationsHistory armazena no banco de dados?</h3>
+  <ul class="quiz-options">
+    <li data-correct>As migrations já aplicadas no banco</li>
+    <li>O histórico de alterações de estoque</li>
+    <li>As entidades rastreadas pelo Change Tracker</li>
+    <li>Os logs de exceções da aplicação</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Perfeito! Ela registra quais migrations já foram aplicadas para o EF Core saber o que falta rodar.</div>
+  <div class="quiz-feedback wrong">❌ Não! A tabela __EFMigrationsHistory controla exclusivamente o histórico de migrations aplicadas no schema.</div>
+</div>
+
+<hr>
+<p><strong>📚 Fontes oficiais:</strong> <a href="https://learn.microsoft.com/pt-br/ef/core/querying/tracking" target="_blank">Microsoft Learn — AsNoTracking</a> | <a href="https://learn.microsoft.com/pt-br/ef/core/querying/related-data/" target="_blank">Microsoft Learn — Include (Eager vs Lazy)</a> | <a href="https://learn.microsoft.com/pt-br/ef/core/managing-schemas/migrations/" target="_blank">Microsoft Learn — Migrations</a></p>
+<p>⬅️ <a href="0010-orm-dbcontext-mapeamento.html">Lição 10: ORM, DbContext e Mapeamento</a> | <a href="../index.html">🏠 Índice</a> | ➡️ <a href="0012-dtos-validacao-problemdetails-padroes.html">Lição 12: DTOs e Erros</a> | 📋 <a href="../reference/consulta-prova-backend.html">Folha de Cola</a></p>
+<p><em>Ficou alguma dúvida? Pergunte ao seu professor (agente) no chat!</em></p>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

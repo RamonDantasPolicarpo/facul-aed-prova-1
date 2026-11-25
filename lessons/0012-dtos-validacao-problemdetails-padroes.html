@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 12 — DTOs, Validação, ProblemDetails e Padrões</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<span class="lesson-number">Lição 12 — Back-End</span>
+<h1>DTOs, Validação, ProblemDetails e Padrões</h1>
+<p class="subtitle">Como blindar o contrato da API, padronizar erros HTTP e entender DAO, Repository e Unit of Work.</p>
+
+<!-- ===== DTOS ===== -->
+<h2>🛡️ Por que usar DTOs em vez de Entidades?</h2>
+
+<p>Nunca receba nem devolva entidades do EF Core diretamente nos endpoints. Use DTOs (<code>CreateProductRequest</code>, <code>ProductResponse</code>):</p>
+<ul>
+  <li><strong>Evita ciclos de JSON:</strong> <code>Category</code> aponta para <code>Products</code>, que aponta para <code>Category</code> (loop infinito na serialização).</li>
+  <li><strong>Segurança / Overposting:</strong> impede que o cliente envie campos que não deveria (como <code>Id</code>).</li>
+  <li><strong>Evita Overfetching:</strong> trafega só o necessário.</li>
+  <li><strong>Desacoplamento:</strong> você pode mudar a tabela sem quebrar o contrato HTTP.</li>
+</ul>
+
+<!-- ===== VALIDAÇÃO E PROBLEMDETAILS ===== -->
+<h2>🚦 Validação Automática, ProblemDetails e GlobalExceptionHandler</h2>
+
+<table>
+  <tr><th>Mecanismo</th><th>Quando atua</th><th>Status HTTP</th></tr>
+  <tr><td><strong><code>[ApiController]</code> + Data Annotations</strong></td><td>Antes de entrar no método do Controller (<code>[Required]</code>, <code>[Range]</code>)</td><td><code>400 Bad Request</code> (<code>ValidationProblemDetails</code>)</td></tr>
+  <tr><td><strong><code>ProblemDetails</code> manual</strong></td><td>Regra de negócio no Controller (ex.: categoria inexistente, estoque insuficiente)</td><td><code>400</code> ou <code>404 Not Found</code></td></tr>
+  <tr><td><strong><code>GlobalExceptionHandler</code></strong> (<code>IExceptionHandler</code>)</td><td>Intercepta exceções não tratadas (equivalente ao <code>@ControllerAdvice</code> no Spring). Loga no servidor e <strong>nunca vaza stack trace</strong></td><td><code>409 Conflict</code> (<code>DbUpdateException</code>) ou <code>500 Internal Server Error</code></td></tr>
+</table>
+
+<!-- ===== PADRÕES DE PERSISTÊNCIA ===== -->
+<h2>🏛️ DAO, Repository e Unit of Work</h2>
+
+<table>
+  <tr><th>Padrão</th><th>Papel</th><th>No EF Core</th></tr>
+  <tr><td><strong>DAO</strong></td><td>Encapsula acesso SQL direto ao banco</td><td>(Abstraído pelo ORM)</td></tr>
+  <tr><td><strong>Repository</strong></td><td>Abstrai acesso a dados como coleção</td><td><code>DbSet&lt;T&gt;</code> (<code>db.Products</code>)</td></tr>
+  <tr><td><strong>Unit of Work</strong></td><td>Coordena alterações em lote e transação</td><td><code>DbContext</code> + <code>SaveChangesAsync()</code></td></tr>
+</table>
+
+<div class="callout tip">
+  <strong>💡 Dica do slide 42:</strong> Não crie <code>GenericRepository&lt;T&gt;</code> por reflexo! O <code>DbContext</code> já oferece Repository + Unit of Work. Só crie repositórios específicos quando precisar encapsular consultas de domínio complexas.
+</div>
+
+<!-- ===== QUIZ ===== -->
+<h2>🧪 Teste rápido</h2>
+
+<div class="quiz" data-quiz="q1">
+  <h3>1. Qual problema de serialização ocorre ao retornar entidades com navegação bidirecional sem DTO?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Ciclo infinito ao serializar JSON</li>
+    <li>Erro de sintaxe nas migrations</li>
+    <li>Desativação automática do Change Tracker</li>
+    <li>Conversão de POST para GET</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Isso! Category → Products → Category gera ciclo infinito no JSON. DTOs resolvem isso.</div>
+  <div class="quiz-feedback wrong">❌ Lembre-se: navegações bidirecionais (Category ↔ Product) causam ciclo infinito na serialização JSON.</div>
+</div>
+
+<div class="quiz" data-quiz="q2">
+  <h3>2. No GlobalExceptionHandler, qual status HTTP é retornado para uma DbUpdateException (conflito de banco)?</h3>
+  <ul class="quiz-options">
+    <li data-correct>409 Conflict com ProblemDetails</li>
+    <li>204 No Content sem corpo</li>
+    <li>401 Unauthorized sem token</li>
+    <li>201 Created com novo Id</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Exato! Conflitos de persistência (como FK ou índice único) viram 409 Conflict; erros genéricos viram 500.</div>
+  <div class="quiz-feedback wrong">❌ Atenção: DbUpdateException é um conflito de persistência, mapeado para 409 Conflict.</div>
+</div>
+
+<div class="quiz" data-quiz="q3">
+  <h3>3. Por que o slide recomenda não criar GenericRepository&lt;T&gt; por reflexo sobre o EF Core?</h3>
+  <ul class="quiz-options">
+    <li data-correct>DbContext já atua como UoW</li>
+    <li>EF Core proíbe interfaces genéricas</li>
+    <li>SQLite não suporta padrão Repository</li>
+    <li>GenericRepository bloqueia uso de DTOs</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Perfeito! DbSet&lt;T&gt; já funciona como Repository e DbContext como Unit of Work; encapsular demais esconde o LINQ.</div>
+  <div class="quiz-feedback wrong">❌ Não! O motivo é que DbContext + DbSet já oferecem comportamento de Unit of Work e Repository.</div>
+</div>
+
+<hr>
+<p><strong>📚 Fontes oficiais:</strong> <a href="https://learn.microsoft.com/pt-br/aspnet/core/web-api/" target="_blank">Microsoft Learn — ASP.NET Core Web API e ProblemDetails</a></p>
+<p>⬅️ <a href="0011-linq-n1-migrations-transacoes.html">Lição 11: LINQ, N+1 e Transações</a> | <a href="../index.html">🏠 Índice</a> | 📋 <a href="../reference/consulta-prova-backend.html">Folha de Cola Final</a></p>
+<p><em>Ficou alguma dúvida? Pergunte ao seu professor (agente) no chat!</em></p>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hub de Estudos — CEUB (Back-End &amp; AED)</title>
+  <link rel="stylesheet" href="assets/course.css">
+  <style>
+    .card-list { display: grid; gap: 0.7rem; margin: 0.8rem 0 1.5rem; }
+    .nav-card {
+      display: block;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--fg);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .nav-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+      border-bottom-color: var(--border);
+    }
+    .nav-card.highlight { border-left-color: var(--success); background: var(--success-light); }
+    .nav-card strong { display: block; color: var(--accent); font-size: 1.02rem; }
+    .nav-card.highlight strong { color: var(--success); }
+    .nav-card span { font-size: 0.9rem; color: #555; }
+  </style>
+</head>
+<body>
+
+<span class="lesson-number">CEUB — 4º Semestre</span>
+<h1>Hub de Estudos</h1>
+<p class="subtitle">Acesso rápido a todas as lições interativas e folhas de cola para revisão na web.</p>
+
+<h2>🚀 Desenvolvimento Back-End (C# / .NET — Prova 25/11)</h2>
+<div class="card-list">
+  <a class="nav-card highlight" href="reference/consulta-prova-backend.html">
+    <strong>📋 Folha de Cola Final — Back-End</strong>
+    <span>Resumo de 1 página: Web API, Hash, Status HTTP, EF Core, Change Tracker, N+1, Migrations e ProblemDetails.</span>
+  </a>
+  <a class="nav-card" href="lessons/0009-webapi-di-hash.html">
+    <strong>Lição 09 — Web API (.NET), DI, Status HTTP e Hash</strong>
+    <span>Minimal API vs Controllers, Container de DI, códigos 200/201/204/400/401/404/409/500, MD5 vs SHA-256.</span>
+  </a>
+  <a class="nav-card" href="lessons/0010-orm-dbcontext-mapeamento.html">
+    <strong>Lição 10 — ORM, DbContext, Change Tracker e Mapeamento</strong>
+    <span>Impedância O/R, Scoped vs Singleton, 5 estados do Change Tracker, Data Annotations vs Fluent API e 1:N.</span>
+  </a>
+  <a class="nav-card" href="lessons/0011-linq-n1-migrations-transacoes.html">
+    <strong>Lição 11 — LINQ, AsNoTracking, N+1, Migrations e Transações</strong>
+    <span>IQueryable vs memória, AsNoTracking(), Lazy vs Eager (Include) vs Projeção (Select), __EFMigrationsHistory e Commit/Rollback.</span>
+  </a>
+  <a class="nav-card" href="lessons/0012-dtos-validacao-problemdetails-padroes.html">
+    <strong>Lição 12 — DTOs, Validação, ProblemDetails e Padrões</strong>
+    <span>Ciclos JSON, [ApiController], GlobalExceptionHandler (IExceptionHandler), DAO, Repository e Unit of Work.</span>
+  </a>
+  <a class="nav-card" href="back-end/Unidade-4-ORM-e-Acesso-a-Dados.pdf">
+    <strong>📄 Slides Oficiais — Unidade 4: ORM e Acesso a Dados (PDF)</strong>
+    <span>Material completo do Prof. Daniel Lim-Apo.</span>
+  </a>
+</div>
+
+<h2>🌳 Algoritmos e Estrutura de Dados (Provas 1 e 2)</h2>
+<div class="card-list">
+  <a class="nav-card highlight" href="reference/consulta-prova-2-arvores-grafos.html">
+    <strong>📋 Folha de Cola — Prova 2: Árvores e Grafos</strong>
+    <span>Anatomia de árvores, ABB, percursos, BFS/DFS e ordenação topológica.</span>
+  </a>
+  <a class="nav-card highlight" href="reference/consulta-python-prova.html">
+    <strong>📋 Folha de Cola — Python para Prova 1</strong>
+    <span>Sintaxe rápida, listas, pilhas, filas e bibliotecas padrão.</span>
+  </a>
+  <a class="nav-card" href="lessons/0001-pilha-lifo-stack.html">
+    <strong>Lição 01 — Pilha (LIFO / Stack)</strong>
+    <span>Conceito LIFO, push/pop e aplicações.</span>
+  </a>
+  <a class="nav-card" href="lessons/0002-fila-fifo-deque.html">
+    <strong>Lição 02 — Fila (FIFO / Deque)</strong>
+    <span>Conceito FIFO e uso de collections.deque.</span>
+  </a>
+  <a class="nav-card" href="lessons/0003-busca-linear-binaria.html">
+    <strong>Lição 03 — Busca Linear e Binária</strong>
+    <span>Complexidade O(n) vs O(log n) e pré-requisito de ordenação.</span>
+  </a>
+  <a class="nav-card" href="lessons/0004-ordenacao-insertion-sort.html">
+    <strong>Lição 04 — Ordenação: Insertion Sort</strong>
+    <span>Passo a passo e invariante de ordenação.</span>
+  </a>
+  <a class="nav-card" href="lessons/0005-bibliotecas-heapq-bisect-join.html">
+    <strong>Lição 05 — Bibliotecas: heapq, bisect e join</strong>
+    <span>Min-heap, inserção ordenada e manipulação de strings.</span>
+  </a>
+  <a class="nav-card" href="lessons/0006-arvores-e-abb.html">
+    <strong>Lição 06 — Árvores e Árvore Binária de Busca (ABB)</strong>
+    <span>Raiz, folha, altura, busca e degeneração.</span>
+  </a>
+  <a class="nav-card" href="lessons/0007-percursos-reconstrucao-grafos-intro.html">
+    <strong>Lição 07 — Percursos, Reconstrução e Grafos Intro</strong>
+    <span>Pré-ordem, em-ordem, pós-ordem, nível e reconstrução.</span>
+  </a>
+  <a class="nav-card" href="lessons/0008-grafos-bfs-dfs-topologica.html">
+    <strong>Lição 08 — Grafos: Tipos, BFS, DFS, Topológica e Bipartido</strong>
+    <span>Modelagem de grafos, detecção de ciclos e menor caminho.</span>
+  </a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 09 — Web API (.NET), DI, Status HTTP e Hash</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<span class="lesson-number">Lição 09 — Back-End</span>
+<h1>Web API (.NET), DI, Status HTTP e Hash</h1>
+<p class="subtitle">A base pré-Unidade 4: Minimal API vs Controllers, Injeção de Dependência, códigos HTTP e integridade com MD5 vs SHA-256.</p>
+
+<!-- ===== MINIMAL API VS CONTROLLERS ===== -->
+<h2>🧭 Minimal API vs Controllers</h2>
+
+<p>No ASP.NET Core, existem duas formas principais de expor endpoints HTTP:</p>
+
+<table>
+  <tr><th>Abordagem</th><th>Onde ficam as rotas</th><th>Equivalente em Java</th><th>Quando usar</th></tr>
+  <tr><td><strong>Minimal API</strong></td><td>Direto no <code>Program.cs</code> (<code>app.MapGet(...)</code>)</td><td>Spark / Javalin</td><td>APIs pequenas, microsserviços simples</td></tr>
+  <tr><td><strong>Controllers</strong> (<code>--use-controllers</code>)</td><td>Classes dedicadas (<code>ProductsController : ControllerBase</code>)</td><td><code>@RestController</code> (Spring)</td><td>Projetos médios/grandes, melhor separação de responsabilidades</td></tr>
+</table>
+
+<!-- ===== STATUS CODES HTTP ===== -->
+<h2>🚦 Status Codes HTTP essenciais na prova</h2>
+
+<table>
+  <tr><th>Código</th><th>Significado</th><th>Quando retornar</th></tr>
+  <tr><td><code>200 OK</code></td><td>Sucesso com corpo</td><td><code>GET</code> que retornou dados</td></tr>
+  <tr><td><code>201 Created</code></td><td>Recurso criado</td><td><code>POST</code> que inseriu no banco (<code>CreatedAtAction</code>)</td></tr>
+  <tr><td><code>204 No Content</code></td><td>Sucesso sem corpo</td><td><code>PUT</code> ou <code>DELETE</code> concluído</td></tr>
+  <tr><td><code>400 Bad Request</code></td><td>Requisição inválida</td><td>Erro de validação no JSON / DTO</td></tr>
+  <tr><td><code>401 Unauthorized</code></td><td>Não autenticado</td><td>Falta token/credencial válida</td></tr>
+  <tr><td><code>404 Not Found</code></td><td>Não encontrado</td><td>ID buscado não existe no banco</td></tr>
+  <tr><td><code>409 Conflict</code></td><td>Conflito de estado/banco</td><td>Violação de índice único ou FK</td></tr>
+  <tr><td><code>500 Internal Server Error</code></td><td>Erro inesperado</td><td>Exceção não tratada no servidor</td></tr>
+</table>
+
+<!-- ===== INJEÇÃO DE DEPENDÊNCIA ===== -->
+<h2>💉 Injeção de Dependência (DI)</h2>
+
+<p>Em vez de o Controller dar <code>new AppDbContext()</code> dentro de cada método (o que cria acoplamento forte e risco de esquecer de fechar a conexão), você registra o serviço no <code>Program.cs</code>:</p>
+
+<pre><code>builder.Services.AddDbContext&lt;AppDbContext&gt;(options =&gt;
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));</code></pre>
+
+<p>O container de DI do ASP.NET Core cria o <code>AppDbContext</code>, injeta no construtor do Controller (igual <code>@Autowired</code> no Spring) e descarta automaticamente ao final da requisição HTTP (<strong>ciclo <code>Scoped</code></strong>).</p>
+
+<!-- ===== HASH CRIPTOGRÁFICO ===== -->
+<h2>🔐 Criptografia vs Hash (MD5, SHA-256 e Senhas)</h2>
+
+<table>
+  <tr><th>Conceito</th><th>Direção</th><th>Objetivo principal</th><th>Exemplos</th></tr>
+  <tr><td><strong>Criptografia</strong></td><td>Mão dupla (reversível com chave)</td><td>Confidencialidade</td><td>AES, RSA</td></tr>
+  <tr><td><strong>Hash</strong></td><td>Mão única (irreversível)</td><td>Integridade e assinatura digital</td><td>MD5, SHA-256</td></tr>
+</table>
+
+<div class="callout tip">
+  <strong>⚡ MD5 vs SHA-256 vs Senhas:</strong>
+  <ul>
+    <li><strong>MD5 (128 bits):</strong> Obsoleto e <strong>inseguro</strong> — sofre de <strong>vulnerabilidade a colisões</strong> (dois arquivos diferentes gerando o mesmo hash).</li>
+    <li><strong>SHA-256 (256 bits):</strong> <strong>Seguro</strong> para verificar integridade de arquivos e assinaturas digitais (efeito avalanche: 1 bit mudado altera todo o hash).</li>
+    <li><strong>Senhas:</strong> Nunca use MD5 nem SHA-256 puro (são rápidos demais para força bruta). Use <strong>bcrypt</strong> ou <strong>Argon2id</strong>, que possuem <em>salt</em> e <em>work factor</em> configurável.</li>
+  </ul>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<h2>🧪 Teste rápido</h2>
+
+<div class="quiz" data-quiz="q1">
+  <h3>1. Qual código HTTP uma API REST deve retornar ao criar um novo produto via POST?</h3>
+  <ul class="quiz-options">
+    <li data-correct>201 Created com CreatedAtAction</li>
+    <li>200 OK com corpo vazio</li>
+    <li>204 No Content sem corpo</li>
+    <li>400 Bad Request de entrada</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Isso! POST que cria um recurso retorna 201 Created (no ASP.NET Core, via <code>CreatedAtAction</code>).</div>
+  <div class="quiz-feedback wrong">❌ Atenção: 200 é para GET, 204 para PUT/DELETE sem corpo. Criação com POST retorna 201 Created.</div>
+</div>
+
+<div class="quiz" data-quiz="q2">
+  <h3>2. Por que o algoritmo MD5 não deve ser usado para segurança crítica?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Sofre vulnerabilidade prática a colisões</li>
+    <li>Permite descriptografia reversa com chave</li>
+    <li>Exige processamento lento em servidor</li>
+    <li>Gera saídas de tamanhos variáveis</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Exato! O MD5 (128 bits) permite que arquivos diferentes gerem o mesmo hash (colisão).</div>
+  <div class="quiz-feedback wrong">❌ Lembre-se: todo hash é mão única e de tamanho fixo; o problema do MD5 é a vulnerabilidade a colisões.</div>
+</div>
+
+<div class="quiz" data-quiz="q3">
+  <h3>3. Qual a principal vantagem de registrar o DbContext no container de DI em vez de usar new?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Desacoplamento e descarte automático Scoped</li>
+    <li>Execução direta sem usar banco</li>
+    <li>Compartilhamento global em modo Singleton</li>
+    <li>Conversão automática de JSON inválido</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Perfeito! O container de DI desacopla a criação e gerencia o ciclo de vida Scoped (1 por requisição HTTP).</div>
+  <div class="quiz-feedback wrong">❌ Não! O container serve para desacoplar e gerenciar o ciclo de vida (Scoped) e o descarte automático ao fim da requisição.</div>
+</div>
+
+<hr>
+<p><strong>📚 Fontes oficiais:</strong> <a href="https://learn.microsoft.com/pt-br/aspnet/core/web-api/" target="_blank">Microsoft Learn — ASP.NET Core Web API</a> | <a href="https://learn.microsoft.com/pt-br/dotnet/standard/security/cryptographic-services" target="_blank">Microsoft Learn — Serviços Criptográficos .NET</a></p>
+<p><em>Ficou alguma dúvida? Pergunte ao seu professor (agente) no chat antes de avançar para a próxima lição!</em></p>
+<p><a href="../index.html">🏠 Índice</a> | ➡️ <a href="0010-orm-dbcontext-mapeamento.html">Lição 10: ORM e DbContext</a> | 📋 <a href="../reference/consulta-prova-backend.html">Folha de Cola</a></p>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

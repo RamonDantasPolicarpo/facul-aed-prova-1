@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lição 10 — ORM, DbContext, Change Tracker e Mapeamento</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<span class="lesson-number">Lição 10 — Back-End</span>
+<h1>ORM, DbContext, Change Tracker e Mapeamento</h1>
+<p class="subtitle">Como o Entity Framework Core traduz objetos C# em tabelas SQL, gerencia estados e evita bugs de concorrência.</p>
+
+<!-- ===== IMPEDÂNCIA E ORM ===== -->
+<h2>🧱 Impedância Objeto-Relacional e ORM</h2>
+
+<p><strong>Object-Relational Impedance Mismatch</strong> é a diferença estrutural entre dois mundos:</p>
+<ul>
+  <li><strong>Objetos (C# / Java):</strong> têm referências, herança, listas e comportamento.</li>
+  <li><strong>Banco Relacional (SQL):</strong> tem tabelas, linhas, colunas, chaves (PK/FK) e joins.</li>
+</ul>
+<p>O <strong>ORM</strong> (Entity Framework Core no C#, equivalente ao <strong>Hibernate/JPA</strong> no Java) faz o mapeamento automático (<code>Classe ↔ Tabela</code>, <code>Propriedade ↔ Coluna</code>, <code>Objeto ↔ Linha</code>) e gera o CRUD em SQL.</p>
+
+<!-- ===== CICLO DE VIDA DO DBCONTEXT ===== -->
+<h2>⏱️ DbContext: Scoped vs Singleton</h2>
+
+<p>O <code>AppDbContext</code> representa uma sessão curta de trabalho com o banco e expõe <code>DbSet&lt;T&gt;</code> para cada tabela. No ASP.NET Core, <code>AddDbContext</code> o registra como <strong>Scoped</strong> por padrão:</p>
+
+<table>
+  <tr><th>Ciclo de Vida</th><th>Comportamento</th><th>Uso com DbContext</th></tr>
+  <tr><td><strong>Scoped</strong></td><td>1 instância nova <strong>por requisição HTTP</strong>; descartada ao terminar</td><td>✅ <strong>Obrigatório / Padrão</strong></td></tr>
+  <tr><td><strong>Singleton</strong></td><td>1 única instância <strong>para toda a aplicação</strong> (todas as requisições)</td><td>❌ <strong>Proibido!</strong></td></tr>
+</table>
+
+<div class="callout tip">
+  <strong>⚠️ Por que NUNCA usar DbContext como Singleton?</strong>
+  <ul>
+    <li><strong>Não é thread-safe:</strong> duas requisições simultâneas acessando o mesmo contexto causam erros de concorrência.</li>
+    <li><strong>Vazamento de memória:</strong> entidades ficam presas no rastreamento indefinidamente.</li>
+  </ul>
+</div>
+
+<!-- ===== CHANGE TRACKER ===== -->
+<h2>🕵️ Change Tracker: como o SaveChanges sabe o que fazer</h2>
+
+<p>O Change Tracker é o "fiscal" dentro do <code>DbContext</code>. Ele acompanha cada entidade pelo seu <strong>estado</strong> e, quando você chama <code>SaveChangesAsync()</code>, gera o SQL exato:</p>
+
+<table>
+  <tr><th>Estado</th><th>Quando acontece</th><th>SQL gerado no SaveChanges</th></tr>
+  <tr><td><code>Detached</code></td><td>Não rastreada (ex.: <code>AsNoTracking()</code>)</td><td>Nenhum</td></tr>
+  <tr><td><code>Unchanged</code></td><td>Carregada do banco e não alterada</td><td>Nenhum</td></tr>
+  <tr><td><code>Added</code></td><td>Marcada com <code>db.Products.Add(p)</code></td><td><code>INSERT</code> (+ preenche <code>Id</code>)</td></tr>
+  <tr><td><code>Modified</code></td><td>Propriedade alterada em entidade rastreada</td><td><code>UPDATE</code> (só colunas alteradas)</td></tr>
+  <tr><td><code>Deleted</code></td><td>Marcada com <code>db.Products.Remove(p)</code></td><td><code>DELETE</code></td></tr>
+</table>
+
+<!-- ===== MAPEAMENTO E 1:N ===== -->
+<h2>🗺️ Mapeamento (Data Annotations vs Fluent API) e 1:N</h2>
+
+<ul>
+  <li><strong>Convenções:</strong> regras automáticas (<code>Id</code> → PK; <code>CategoryId</code> → FK).</li>
+  <li><strong>Data Annotations</strong> (<code>[Required]</code>, <code>[Range]</code>): recomendadas em <strong>DTOs</strong> para validar entrada HTTP.</li>
+  <li><strong>Fluent API</strong> (no <code>OnModelCreating</code>): recomendada para <strong>regras estruturais do banco</strong> (<code>HasMaxLength</code>, <code>HasIndex().IsUnique()</code>, <code>HasPrecision</code>, <code>HasOne/WithMany</code>, <code>OnDelete</code>).</li>
+</ul>
+
+<p>No relacionamento <strong>1:N</strong> (<code>Category</code> 1 → N <code>Product</code>), usar <code>.OnDelete(DeleteBehavior.Restrict)</code> impede excluir uma categoria que ainda tenha produtos vinculados (diferente de <code>Cascade</code>, que apagaria os produtos junto).</p>
+
+<!-- ===== QUIZ ===== -->
+<h2>🧪 Teste rápido</h2>
+
+<div class="quiz" data-quiz="q1">
+  <h3>1. Por que o DbContext NÃO deve ser registrado como Singleton em uma Web API?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Causa erros de concorrência e memória</li>
+    <li>Impede o uso de SQLite local</li>
+    <li>Bloqueia a criação de novas migrations</li>
+    <li>Desativa automaticamente todas as chaves estrangeiras</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Isso! O DbContext não é thread-safe (concorrência entre threads) e acumula entidades rastreadas na memória.</div>
+  <div class="quiz-feedback wrong">❌ Lembre-se: DbContext foi feito para vida curta (Scoped). Em Singleton, várias threads competem e ele vaza memória.</div>
+</div>
+
+<div class="quiz" data-quiz="q2">
+  <h3>2. Uma entidade buscada normalmente no banco teve seu preço alterado. Qual estado ela assume?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Modified para gerar comando UPDATE</li>
+    <li>Added para gerar comando INSERT</li>
+    <li>Detached para ignorar o banco</li>
+    <li>Unchanged para pular o SaveChanges</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Perfeito! Consultas rastreadas entram como Unchanged e passam para Modified ao alterar uma propriedade.</div>
+  <div class="quiz-feedback wrong">❌ Atenção: entidade buscada e alterada vira Modified, fazendo o SaveChangesAsync gerar um UPDATE.</div>
+</div>
+
+<div class="quiz" data-quiz="q3">
+  <h3>3. O que acontece com DeleteBehavior.Restrict ao tentar apagar uma Category com Products?</h3>
+  <ul class="quiz-options">
+    <li data-correct>Bloqueia a exclusão por erro de FK</li>
+    <li>Apaga todos os produtos em cascata</li>
+    <li>Define o campo CategoryId como nulo</li>
+    <li>Move os produtos para outra categoria</li>
+  </ul>
+  <div class="quiz-feedback correct">✅ Exato! Restrict protege a integridade referencial e impede a exclusão enquanto houver filhos vinculados.</div>
+  <div class="quiz-feedback wrong">❌ Quem apaga os filhos junto é o Cascade. O Restrict bloqueia a exclusão por violação de chave estrangeira.</div>
+</div>
+
+<hr>
+<p><strong>📚 Fontes oficiais:</strong> <a href="https://learn.microsoft.com/pt-br/ef/core/" target="_blank">Microsoft Learn — EF Core</a> | <a href="https://learn.microsoft.com/pt-br/ef/core/dbcontext-configuration/" target="_blank">Microsoft Learn — Tempo de vida do DbContext</a></p>
+<p>⬅️ <a href="0009-webapi-di-hash.html">Lição 09: Web API, DI e Hash</a> | <a href="../index.html">🏠 Índice</a> | ➡️ <a href="0011-linq-n1-migrations-transacoes.html">Lição 11: LINQ e Transações</a> | 📋 <a href="../reference/consulta-prova-backend.html">Folha de Cola</a></p>
+<p><em>Ficou alguma dúvida? Pergunte ao seu professor (agente) no chat antes de avançar!</em></p>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

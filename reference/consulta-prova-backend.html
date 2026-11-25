@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folha de Cola — Prova Teórica Back-End (C# / .NET)</title>
+  <link rel="stylesheet" href="../assets/course.css">
+  <style>
+    body { max-width: 820px; font-size: 15px; line-height: 1.45; padding: 1rem 1.2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.2rem; }
+    h2 { font-size: 1.1rem; margin: 1.1rem 0 0.4rem; }
+    table { margin: 0.4rem 0 0.8rem; font-size: 0.9rem; }
+    th, td { padding: 0.35rem 0.55rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+    .card { border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 0.8rem; background: #fff; }
+    .card h3 { margin: 0 0 0.35rem; font-size: 1rem; color: var(--accent); }
+    ul { margin-left: 1.1rem; }
+  </style>
+</head>
+<body>
+
+<span class="lesson-number">Referência Rápida — Prova 25/11 às 19h</span>
+<h1>Folha de Cola — Back-End (.NET / EF Core)</h1>
+<p class="subtitle">Revisão de 5 minutos antes da prova. Tudo ancorado no que você já conhece de Java.</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>1. Web API &amp; DI (Pré-Unidade 4)</h3>
+    <ul>
+      <li><strong>Minimal API:</strong> rotas no <code>Program.cs</code> (<code>app.MapGet</code>).</li>
+      <li><strong>Controllers:</strong> classes dedicadas (<code>[ApiController]</code>, tipo <code>@RestController</code>).</li>
+      <li><strong>DI (<code>AddDbContext</code>):</strong> container cria e injeta no construtor (tipo <code>@Autowired</code>), gerenciando ciclo de vida e descarte.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>2. Hash &amp; Segurança</h3>
+    <ul>
+      <li><strong>Criptografia:</strong> mão dupla (reversível com chave — ex.: AES).</li>
+      <li><strong>Hash:</strong> mão única (irreversível), tamanho fixo, efeito avalanche → garante <strong>integridade</strong>.</li>
+      <li><strong>MD5 (128 bits):</strong> ❌ inseguro (<strong>colisões</strong>).</li>
+      <li><strong>SHA-256 (256 bits):</strong> ✅ seguro para integridade.</li>
+      <li><strong>Senhas:</strong> usar <strong>bcrypt / Argon2id</strong> (salt + work factor).</li>
+    </ul>
+  </div>
+</div>
+
+<h2>3. Status Codes HTTP</h2>
+<table>
+  <tr><th>200 OK</th><th>201 Created</th><th>204 No Content</th><th>400 Bad Request</th><th>401 Unauthorized</th><th>404 Not Found</th><th>409 Conflict</th><th>500 Server Error</th></tr>
+  <tr><td>GET com corpo</td><td>POST criação</td><td>PUT / DELETE</td><td>Validação / DTO</td><td>Sem autenticação</td><td>ID inexistente</td><td>Conflito FK/Unique</td><td>Exceção não tratada</td></tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h3>4. ORM &amp; DbContext</h3>
+    <ul>
+      <li><strong>Impedância O/R:</strong> choque Objeto ↔ Tabela SQL.</li>
+      <li><strong>ORM:</strong> EF Core (C#) ↔ Hibernate/JPA (Java).</li>
+      <li><strong><code>Scoped</code>:</strong> 1 por requisição HTTP (✅ padrão).</li>
+      <li><strong><code>Singleton</code>:</strong> 1 global (❌ <strong>proibido</strong>: não é thread-safe + vazamento de memória).</li>
+      <li><strong><code>DeleteBehavior.Restrict</code>:</strong> bloqueia excluir pai com filhos (erro FK). <code>Cascade</code> apaga tudo.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>5. Change Tracker (5 Estados)</h3>
+    <ul>
+      <li><code>Detached</code> → não rastreada (<code>AsNoTracking</code>)</li>
+      <li><code>Unchanged</code> → lida do banco, sem mudanças</li>
+      <li><code>Added</code> → <code>Add()</code> → gera <code>INSERT</code></li>
+      <li><code>Modified</code> → propriedade alterada → <code>UPDATE</code></li>
+      <li><code>Deleted</code> → <code>Remove()</code> → gera <code>DELETE</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:0.8rem;">
+  <div class="card">
+    <h3>6. Mapeamento (Slide 35)</h3>
+    <ul>
+      <li><strong>Convenções:</strong> <code>Id</code> = PK, <code>CategoryId</code> = FK.</li>
+      <li><strong>Data Annotations:</strong> <code>[Required]</code>, <code>[Range]</code> → nos <strong>DTOs</strong> (HTTP).</li>
+      <li><strong>Fluent API:</strong> <code>OnModelCreating</code> → schema, índices, <code>HasPrecision</code>, <code>HasOne/WithMany</code>, <code>OnDelete</code>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>7. LINQ, N+1 &amp; Performance</h3>
+    <ul>
+      <li><strong><code>IQueryable</code>:</strong> <code>Where()</code> antes de <code>ToListAsync()</code> filtra no <strong>SQL</strong>; depois filtra em memória.</li>
+      <li><strong><code>AsNoTracking()</code>:</strong> usar só em leituras (<code>GET</code>); nunca em <code>PUT</code>/<code>DELETE</code>.</li>
+      <li><strong>N+1:</strong> Lazy Loading no loop faz <strong>1 + N</strong> queries.</li>
+      <li><strong>Solução:</strong> <code>Include()</code> (Eager, 1 JOIN) ou <code>Select()</code> (Projeção DTO, evita overfetching).</li>
+    </ul>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:0.8rem;">
+  <div class="card">
+    <h3>8. Migrations &amp; Transações</h3>
+    <ul>
+      <li><code>dotnet ef migrations add Nome</code> → gera <code>Up()</code>/<code>Down()</code>.</li>
+      <li><code>dotnet ef database update</code> → aplica no banco.</li>
+      <li><strong><code>__EFMigrationsHistory</code>:</strong> tabela com migrations aplicadas.</li>
+      <li><strong>1 <code>SaveChangesAsync</code>:</strong> transação implícita.</li>
+      <li><strong>Vários <code>SaveChangesAsync</code>:</strong> <code>BeginTransactionAsync</code> + <code>CommitAsync</code> / <code>RollbackAsync</code> (atomicidade).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>9. DTOs, Erros &amp; Padrões</h3>
+    <ul>
+      <li><strong>DTOs:</strong> evitam <strong>ciclos JSON</strong>, overfetching, overposting e acoplamento.</li>
+      <li><strong><code>[ApiController]</code>:</strong> valida DTO antes do método → <code>400 ValidationProblemDetails</code>.</li>
+      <li><strong><code>IExceptionHandler</code>:</strong> centraliza erros inesperados (não vaza stack trace).</li>
+      <li><strong>Repository + UoW:</strong> <code>DbSet&lt;T&gt;</code> + <code>DbContext</code> já fazem esse papel.</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+<p><strong>Navegação:</strong>
+  <a href="../index.html">🏠 Índice</a> |
+  <a href="../lessons/0009-webapi-di-hash.html">09 Web API &amp; Hash</a> |
+  <a href="../lessons/0010-orm-dbcontext-mapeamento.html">10 ORM &amp; DbContext</a> |
+  <a href="../lessons/0011-linq-n1-migrations-transacoes.html">11 LINQ &amp; Transações</a> |
+  <a href="../lessons/0012-dtos-validacao-problemdetails-padroes.html">12 DTOs &amp; Erros</a>
+</p>
+</body>
+</html>
